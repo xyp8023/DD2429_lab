@@ -44,8 +44,35 @@ grid on
 
 % ------------------------
 % TODO: FILL IN THIS PART
+hold off
+figure(2)
+plot3( camx, camy, camz, 'ro' );
+hold on
+view(126,20)
+axis equal
+axis vis3d
+grid on
+N = size(points2d_cartesian,2);
+U = points2d_cartesian(1,:);
+V = points2d_cartesian(2,:);
+triang = delaunay(U,V);
+trisurf(triang,X,Y,Z,'Facecolor','green','FaceAlpha',0.5,'EdgeColor','black');
 
 
+hold off
+if ~isempty(texture)
+    figure(3)
+    hold on
+    plot3( camx, camy, camz, 'ro' );
+    plot3( X, Y, Z, '.');
+    view(126,20)
+    axis equal
+    axis vis3d
+    grid on
+    textureSize = 16;
+    handles = draw_textured_triangles( triang, X, Y, Z, U, V, texture', textureSize );
+    
+end
 
 end
 

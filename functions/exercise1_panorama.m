@@ -8,7 +8,7 @@ close all                   % Close all figures
 clc                         % Clear the command window
 addpath( genpath( '../' ) );% Add paths to all subdirectories of the parent directory
 
-LOAD_DATA           = false;
+LOAD_DATA           = true;
 REFERENCE_VIEW      = 3;
 CAMERAS             = 3;
 
@@ -48,29 +48,29 @@ homographies = zeros(3,3,CAMERAS);
 %-------------------------
 % TODO: FILL IN THIS PART
 
-% % normalized
-% norm_mat = compute_normalization_matrices( points2d );
-% points2d_normalized = zeros(size(points2d));
-% homographies_normalized = zeros(3, 3, CAMERAS);
-% norm_mat_ref = norm_mat(:,:,REFERENCE_VIEW);
-% for c=1:CAMERAS
-%     points2d_normalized(:,:,c) = norm_mat(:,:,c) * points2d(:,:,c);
-% end
-% for c=1:CAMERAS
-%     points_ref = points2d_normalized(:,:,REFERENCE_VIEW);
-%     points_c   = points2d_normalized(:,:,c);
-%     homographies_normalized(:,:,c) = compute_homography( points_ref, points_c );
-% %     homographies(:,:,c)= homographies_normalized(:,:,c)\norm_mat_ref* norm_mat(:,:,c);
-%     homographies(:,:,c)= pinv(norm_mat_ref)* homographies_normalized(:,:,c)* norm_mat(:,:,c) ;
-% end
-
-
-% non-normalized
+% normalized
+norm_mat = compute_normalization_matrices( points2d );
+points2d_normalized = zeros(size(points2d));
+homographies_normalized = zeros(3, 3, CAMERAS);
+norm_mat_ref = norm_mat(:,:,REFERENCE_VIEW);
 for c=1:CAMERAS
-    points_ref = points2d(:,:,REFERENCE_VIEW);
-    points_c   = points2d(:,:,c);
-    homographies(:,:,c) = compute_homography( points_ref, points_c );
+    points2d_normalized(:,:,c) = norm_mat(:,:,c) * points2d(:,:,c);
 end
+for c=1:CAMERAS
+    points_ref = points2d_normalized(:,:,REFERENCE_VIEW);
+    points_c   = points2d_normalized(:,:,c);
+    homographies_normalized(:,:,c) = compute_homography( points_ref, points_c );
+%     homographies(:,:,c)= homographies_normalized(:,:,c)\norm_mat_ref* norm_mat(:,:,c);
+    homographies(:,:,c)= pinv(norm_mat_ref)* homographies_normalized(:,:,c)* norm_mat(:,:,c) ;
+end
+
+
+% % non-normalized
+% for c=1:CAMERAS
+%     points_ref = points2d(:,:,REFERENCE_VIEW);
+%     points_c   = points2d(:,:,c);
+%     homographies(:,:,c) = compute_homography( points_ref, points_c );
+% end
 
 
 for c = 1:CAMERAS

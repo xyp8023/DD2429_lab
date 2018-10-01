@@ -27,4 +27,50 @@ function [cams, cam_centers] = reconstruct_stereo_cameras( E, K, points2d )
 
 %------------------------------
 % TODO: FILL IN THIS PART
+verify = true;
+Ma = K(:,:,1) * [1,0,0,0;0,1,0,0;0,0,1,0];
+[U, S, V] = svd(E);
+t = V(:, end);
+I = eye(3,3);
+W = [0,-1,0;1,0,0;0,0,1];
+R1 = U*W*V';
+R2 = U*W'*V';
+if (det(R1)~=1)
+% if (det(R1)==-1)
+    R1 = -1*R1;
+end
+if (det(R2)~=1)
+    R2 = -1*R2;
+end
+Mb = zeros(3,4,4);
+Mb(:,:,1) = K(:,:,2)*R1*cat(2,I,t);   % center_cam2 = -t
+Mb(:,:,2) = K(:,:,2)*R1*cat(2,I,-t);  % center_cam2 = t
+Mb(:,:,3) = K(:,:,2)*R2*cat(2,I,t);   % center_cam2 = -t   rotation 180
+Mb(:,:,4) = K(:,:,2)*R2*cat(2,I,-t);  % center_cam2 = t    rotation 180
+
+for i=1:4
+   cams =  zeros(3,4,2);
+   cams(:,:,1) =Ma;
+   cams(:,:,2) =Mb(:,:,i);
+   cam_centers = zeros(4,2);
+   cam_centers(:,1) = [0,0,0,1]';
+   cam_centers(:,2) = [(-1)^i*t;1];
+   points3d= reconstruct_point_cloud( cams, points2d );
+   
+   points3d_a = pinv(K(:,:,1))*cams(:,:,1)*points3d;
+   points3d_b = pinv(K(:,:,2))*cams(:,:,2)*points3d;
+   
+   if ((points3d_a(3)>0) && (points3d_b(3)>cam_centers(3,2)))
+        break
+   end
+
+   if verify
+      scale_factor = ( R2 * [0,-t(3),t(2);t(3),0,-t(1);-t(2),t(1),0])./E;
+      scale_factor = scale_factor/scale_factor(1,1)
+   end
+   
+end
+
+end
+
 
