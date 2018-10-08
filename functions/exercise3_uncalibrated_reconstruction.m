@@ -21,7 +21,7 @@ image_names_file    = 'names_images_toyhouse.txt';
 SYNTHETIC_DATA      = 1;
 REAL_DATA_CLICK     = 2;
 REAL_DATA_LOAD      = 3;
-VERSION             = SYNTHETIC_DATA;
+VERSION             = 3;
 
 if VERSION == SYNTHETIC_DATA
     points2d_file = '../data/data_sphere.mat';
@@ -40,7 +40,7 @@ if VERSION == SYNTHETIC_DATA
     
 elseif VERSION == REAL_DATA_CLICK
     
-    [images image_names] = load_images_grey( image_names_file, CAMERAS ); 
+    [images, image_names] = load_images_grey( image_names_file, CAMERAS ); 
     points2d = click_multi_view( images );%, CAMERAS , data, 0); % for clicking and displaying data
     save( points2d_file, 'points2d' );
     
@@ -57,11 +57,11 @@ end
 
 F = compute_F_matrix( points2d );
 
-[cameras camera_centers] = reconstruct_uncalibrated_stereo_cameras( F );
+[cameras, camera_centers] = reconstruct_uncalibrated_stereo_cameras( F );
 
 points3d = reconstruct_point_cloud( cameras, points2d );
 
-[error_average error_max] = check_reprojection_error( points2d, cameras, points3d );
+[error_average, error_max] = check_reprojection_error( points2d, cameras, points3d );
 fprintf( '\n\nThe reprojection error: points2d = cameras * points3d is: \n' );
 fprintf( 'Average error: %5.2fpixel; Maximum error: %5.2fpixel \n', error_average, error_max ); 
 
@@ -78,10 +78,14 @@ else
 
     % Manually provide the ground truth 3D coordinates for some points
     % in order to rectify:
-  
+    
     %------------------------------
     % FILL IN THIS PART 
-    
+    indices = 1:7;
+    points3d_ground_truth = [0,0,0; 0,0,10; 27,0,0; 0,9,0; 0,9,10;5,15,5;27,15,5]';
+%     points3d_ground_truth = [0,0,0; 0,10,0; 27,0,0; 0,0,9; 0,10,9;]';
+
+
 end
 
 H = compute_rectification_matrix( points3d(:,indices), points3d_ground_truth );
@@ -90,8 +94,12 @@ H = compute_rectification_matrix( points3d(:,indices), points3d_ground_truth );
 
 %------------------------------
 % FILL IN THIS PART 
-
-
+% H= eye(4);
+points3d = H * points3d;
+% points3d_ca = homogeneous_to_cartesian(points3d);
+camera_centers =  H * camera_centers;
+% camera_centers(:,1) = camera_centers(:,1)/camera_centers(4,1);
+% camera_centers(:,2) = camera_centers(:,2)/camera_centers(4,2);
 visualize_reconstruction( points3d, camera_centers, ...
     points2d( :, :, REFERENCE_VIEW ), images{REFERENCE_VIEW} )
 

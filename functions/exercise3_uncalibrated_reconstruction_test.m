@@ -37,7 +37,7 @@ fprintf('-----------------------------\n')
 
 load( '../debug/part3/F.mat' );
 
-[cameras_test camera_centers_test] = ...
+[cameras_test, camera_centers_test] = ...
     reconstruct_uncalibrated_stereo_cameras( F );
 
 for c=1:CAMERAS

@@ -69,7 +69,7 @@ if ~isempty(texture)
     axis equal
     axis vis3d
     grid on
-    textureSize = 16;
+    textureSize = 128;
     handles = draw_textured_triangles( triang, X, Y, Z, U, V, texture', textureSize );
     
 end
